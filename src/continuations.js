@@ -59,9 +59,18 @@ function recursionContinuations (graph, mux, paths) {
   return _.compact([rec1, rec2])
 }
 
+function muxStarts (graph, paths) {
+  return _.compact(
+    _.map(paths, (p) => {
+      if (graph.node(p[0]).id === 'logic/mux') {
+        return p[0]
+      }
+    }))
+}
+
 export function continuationsForMux (graph, mux, option) {
   var paths = muxInPortPathes(graph, mux)
-  return recursionContinuations(graph, mux, paths)
+  return _.concat(recursionContinuations(graph, mux, paths), muxStarts(graph, paths.input1), muxStarts(graph, paths.input2))
 }
 
 export function addContinuations (graph, options = {mode: 'only necessary'}) {

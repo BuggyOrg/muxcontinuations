@@ -51,6 +51,14 @@ describe('Processing paths to multiplexers inputs', () => {
     expect(continuations[0]).to.equal('defco_factorial:factorial_3')
   })
 
+  it('can finds muxes on mux paths', () => {
+    var factorial = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/ack.json')))
+    var continuations = api.continuationsForMux(factorial, 'defco_ack:mux_0', {mode: 'only necessary'})
+    expect(continuations).to.be.ok
+    expect(continuations).to.have.length(1)
+    expect(continuations[0]).to.equal('defco_ack:mux_3')
+  })
+
   describe('Mode: Only necessary', () => {
     /* it('does not replace simple cases', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/mux.json', 'utf8')))
