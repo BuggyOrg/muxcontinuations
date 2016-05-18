@@ -70,12 +70,40 @@ function muxStarts (graph, paths) {
 
 export function continuationsForMux (graph, mux, option) {
   var paths = muxInPortPathes(graph, mux)
-  return _.concat(recursionContinuations(graph, mux, paths), muxStarts(graph, paths.input1), muxStarts(graph, paths.input2))
+  return {
+    mux,
+    continuations: _.concat(recursionContinuations(graph, mux, paths), muxStarts(graph, paths.input1), muxStarts(graph, paths.input2))
+  }
 }
 
 export function addContinuations (graph, options = {mode: 'only necessary'}) {
   var muxes = utils.getAll(graph, 'logic/mux')
-  var cnts = _.map(muxes, _.partial(continuationsForMux, graph, _, options))
-  console.log(cnts)
-  return graph
+  var cnts = _.reject(_.map(muxes, _.partial(continuationsForMux, graph, _, options)), (m) => m.continuations.length === 0)
+  var cntNodes = _.flatten(_.map(cnts, (c) => c.continuations))
+  var muxTable = _.keyBy(cnts, 'mux')
+  var cntTable = _.fromPairs(_.map(cntNodes, (c) => [c, true]))
+  var editGraph = utils.edit(graph)
+
+  return utils.finalize(_.merge({}, editGraph, {
+    nodes: _.map(editGraph.nodes, (n) => {
+      var node = n
+      if (_.has(cntTable, n.v)) {
+        node = _.merge({}, node, {value: {settings: {isContinuation: cntTable[n.v]}}})
+      }
+      if (_.has(muxTable, n.v)) {
+        node = _.merge({}, node, {value: {settings: {continuations: muxTable[n.v].continuations}}})
+      }
+      return node
+    }),
+    edges: _.concat(editGraph.edges, _.flatten(_.map(cnts, (c) =>
+      _.map(c.continuations, (n) => ({
+        v: c.mux,
+        w: n,
+        name: c.mux + '→→' + n,
+        value: {
+          continuation: true
+        }
+      })))
+    ))
+  }))
 }

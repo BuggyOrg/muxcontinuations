@@ -45,25 +45,44 @@ describe('Find first recursion on a path', () => {
 describe('Processing paths to multiplexers inputs', () => {
   it('can find recursion in mux paths', () => {
     var factorial = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/factorial.json')))
-    var continuations = api.continuationsForMux(factorial, 'defco_factorial:mux_0', {mode: 'only necessary'})
-    expect(continuations).to.be.ok
-    expect(continuations).to.have.length(1)
-    expect(continuations[0]).to.equal('defco_factorial:factorial_3')
+    var cnts = api.continuationsForMux(factorial, 'defco_factorial:mux_0', {mode: 'only necessary'})
+    expect(cnts.continuations).to.be.ok
+    expect(cnts.continuations).to.have.length(1)
+    expect(cnts.continuations[0]).to.equal('defco_factorial:factorial_3')
   })
 
   it('can finds muxes on mux paths', () => {
     var factorial = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/ack.json')))
-    var continuations = api.continuationsForMux(factorial, 'defco_ack:mux_0', {mode: 'only necessary'})
-    expect(continuations).to.be.ok
-    expect(continuations).to.have.length(1)
-    expect(continuations[0]).to.equal('defco_ack:mux_3')
+    var cnts = api.continuationsForMux(factorial, 'defco_ack:mux_0', {mode: 'only necessary'})
+    expect(cnts.continuations).to.be.ok
+    expect(cnts.continuations).to.have.length(1)
+    expect(cnts.continuations[0]).to.equal('defco_ack:mux_3')
   })
 
   describe('Mode: Only necessary', () => {
-    /* it('does not replace simple cases', () => {
+    it('does not replace simple cases', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/mux.json', 'utf8')))
-      var newGraph = api.demuxify(graph, {mode: 'only necessary'})
+      var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
       expect(grlib.json.write(newGraph)).to.deep.equal(grlib.json.write(graph))
-    })*/
+    })
+
+    it('creates one continuation for the factorial example', () => {
+      var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/factorial.json', 'utf8')))
+      var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
+      expect(newGraph.node('defco_factorial:factorial_3').settings.isContinuation).to.be.true
+      expect(newGraph.node('defco_factorial:mux_0').settings.continuations).to.deep.equal(['defco_factorial:factorial_3'])
+      expect(newGraph.edges().length).to.equal(graph.edges().length + 1)
+    })
+
+    it('creates three continuation for the factorial example', () => {
+      var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/ack.json', 'utf8')))
+      var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
+      expect(newGraph.node('defco_ack:ack_11').settings.isContinuation).to.be.true
+      expect(newGraph.node('defco_ack:ack_4').settings.isContinuation).to.be.true
+      expect(newGraph.node('defco_ack:mux_0').settings.continuations).to.deep.equal(['defco_ack:mux_3'])
+      expect(newGraph.node('defco_ack:mux_3').settings.continuations).to.include('defco_ack:ack_11')
+      expect(newGraph.node('defco_ack:mux_3').settings.continuations).to.include('defco_ack:ack_4')
+      expect(newGraph.edges().length).to.equal(graph.edges().length + 3)
+    })
   })
 })
