@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "description": "Adds continuations to multiplexers.",
   "main": "./lib/api.js",
-  "bin": {
-    "demuxify": "./lib/cli.js"
-  },
   "scripts": {
     "test": "standard src/**/*.js && mocha --compilers js:babel-register",
     "build": "babel src -d lib",
