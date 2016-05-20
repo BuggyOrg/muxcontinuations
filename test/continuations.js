@@ -48,7 +48,7 @@ describe('Processing paths to multiplexers inputs', () => {
     var cnts = api.continuationsForMux(factorial, 'defco_factorial:mux_0', {mode: 'only necessary'})
     expect(cnts.continuations).to.be.ok
     expect(cnts.continuations).to.have.length(1)
-    expect(cnts.continuations[0]).to.equal('defco_factorial:factorial_3')
+    expect(cnts.continuations[0]).to.eql({node: 'defco_factorial:factorial_3', port: 'input2'})
   })
 
   it('can finds muxes on mux paths', () => {
@@ -56,7 +56,7 @@ describe('Processing paths to multiplexers inputs', () => {
     var cnts = api.continuationsForMux(factorial, 'defco_ack:mux_0', {mode: 'only necessary'})
     expect(cnts.continuations).to.be.ok
     expect(cnts.continuations).to.have.length(1)
-    expect(cnts.continuations[0]).to.equal('defco_ack:mux_3')
+    expect(cnts.continuations[0]).to.eql({node: 'defco_ack:mux_3', port: 'input2'})
   })
 
   describe('Mode: Only necessary', () => {
@@ -69,20 +69,24 @@ describe('Processing paths to multiplexers inputs', () => {
     it('creates one continuation for the factorial example', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/factorial.json', 'utf8')))
       var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
-      expect(newGraph.node('defco_factorial:factorial_3').settings.isContinuation).to.be.true
-      expect(newGraph.node('defco_factorial:mux_0').settings.continuations).to.deep.equal(['defco_factorial:factorial_3'])
+      expect(newGraph.node('defco_factorial:factorial_3').params.isContinuation).to.be.true
+      expect(newGraph.node('defco_factorial').params.isContinuation).to.be.true
+      expect(newGraph.node('defco_factorial:mux_0').params.continuations).to.deep.equal([{node: 'defco_factorial:factorial_3', port: 'input2'}])
       expect(newGraph.edges().length).to.equal(graph.edges().length + 1)
     })
 
     it('creates three continuation for the factorial example', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/ack.json', 'utf8')))
       var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
-      expect(newGraph.node('defco_ack:ack_11').settings.isContinuation).to.be.true
-      expect(newGraph.node('defco_ack:ack_4').settings.isContinuation).to.be.true
-      expect(newGraph.node('defco_ack:mux_0').settings.continuations).to.deep.equal(['defco_ack:mux_3'])
-      expect(newGraph.node('defco_ack:mux_3').settings.continuations).to.include('defco_ack:ack_11')
-      expect(newGraph.node('defco_ack:mux_3').settings.continuations).to.include('defco_ack:ack_4')
+      expect(newGraph.node('defco_ack:ack_11').params.isContinuation).to.be.true
+      expect(newGraph.node('defco_ack:ack_4').params.isContinuation).to.be.true
+      expect(newGraph.node('defco_ack').params.isContinuation).to.be.true
+      expect(newGraph.node('defco_ack:mux_0').params.continuations).to.deep.equal([{node: 'defco_ack:mux_3', port: 'input2'}])
+      /* expect(newGraph.node('defco_ack:mux_3').params.continuations).to.include('defco_ack:ack_11')
+      expect(newGraph.node('defco_ack:mux_3').params.continuations).to.include('defco_ack:ack_4')*/
       expect(newGraph.edges().length).to.equal(graph.edges().length + 3)
+      expect(newGraph.edge({v: 'defco_ack:mux_0', w: 'defco_ack:mux_3', name: 'defco_ack:mux_0→→defco_ack:mux_3@input2'})).to.be.ok
+      expect(newGraph.edge({v: 'defco_ack:mux_0', w: 'defco_ack:mux_3', name: 'defco_ack:mux_0→→defco_ack:mux_3@input2'}).continuation).to.be.true
     })
   })
 })
