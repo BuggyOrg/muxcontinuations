@@ -1,5 +1,5 @@
 {
-  "name": "@buggyorg/muxcont",
+  "name": "@buggyorg/muxcontinuations",
   "version": "0.1.0",
   "description": "Adds continuations to multiplexers.",
   "main": "./lib/api.js",
@@ -19,6 +19,6 @@
     "standard": "^6.0.8"
   },
   "dependencies": {
-    "@buggyorg/graphtools": "^0.2.14"
+    "@buggyorg/graphtools": "^0.2.15"
   }
 }
