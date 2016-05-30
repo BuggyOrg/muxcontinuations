@@ -19,6 +19,7 @@
     "standard": "^6.0.8"
   },
   "dependencies": {
-    "@buggyorg/graphtools": "^0.2.15"
+    "@buggyorg/graphtools": "^0.2.15",
+    "lodash": "^4.13.1"
   }
 }
