@@ -30,36 +30,37 @@ export function firstRecursionOnPath (graph, mux, path) {
 }
 
 export function maxIdxAndValue (list, fn) {
-  return _.reduce(list, (acc, cur, index) => {
-    if (acc) {
-      var newVal = fn(cur)
-      if (newVal < acc.max) {
-        return acc
-      }
-    }
-    return {max: newVal, value: cur, index}
-  }, null)
+  var maxValue = _.maxBy(maxDistanceForAll(list, fn), (v) => v.max)
+  return {
+    max: maxValue.max, value: maxValue.value, index: maxValue.index
+  }
+}
+
+export function maxDistanceForAll (list, fn) {
+  return _.map(list, (cur, index) => {
+    return { max: fn(cur) || cur.length, value: cur, index }
+  })
 }
 
 function recursionContinuations (graph, mux, paths) {
-  var idx1 = maxIdxAndValue(paths.input1, (i1) => {
+  var dist1 = maxDistanceForAll(paths.input1, (i1) => {
     return Math.max(
       _.max(paths.control, (c) => path.latestSplit(graph, i1, c)),
       _.max(paths.input2, (i2) => path.latestSplit(graph, i1, i2)))
   })
-  var idx2 = maxIdxAndValue(paths.input2, (i2) => {
+  var dist2 = maxDistanceForAll(paths.input2, (i2) => {
     return Math.max(
       _.max(paths.control, (c) => path.latestSplit(graph, i2, c)),
       _.max(paths.input1, (i1) => path.latestSplit(graph, i2, i1)))
   })
-  var p1 = paths.input1[idx1.index].slice(idx1.value + 1)
-  var p2 = paths.input2[idx2.index].slice(idx2.value + 1)
-  var rec1 = firstRecursionOnPath(graph, mux, p1)
-  var rec2 = firstRecursionOnPath(graph, mux, p2)
-  return _.compact([
-    (rec1) ? {node: rec1, port: 'input1'} : null,
-    (rec2) ? {node: rec2, port: 'input2'} : null
-  ])
+  var p1 = _.map(dist1, (d) => paths.input1[d.index].slice(d.value + 1))
+  var p2 = _.map(dist2, (d) => paths.input2[d.index].slice(d.value + 1))
+  var rec1 = _.uniq(_.compact(_.map(p1, (p) => firstRecursionOnPath(graph, mux, p))))
+  var rec2 = _.uniq(_.compact(_.map(p2, (p) => firstRecursionOnPath(graph, mux, p))))
+  return _.compact(_.flatten([
+    (rec1.length > 0) ? _.map(rec1, (r) => ({node: r, port: 'input1'})) : null,
+    (rec2.length > 0) ? _.map(rec2, (r) => ({node: r, port: 'input2'})) : null
+  ]))
 }
 
 function muxStarts (graph, paths, port) {

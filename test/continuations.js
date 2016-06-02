@@ -84,9 +84,16 @@ describe('Processing paths to multiplexers inputs', () => {
       expect(newGraph.node('defco_ack:mux_0').params.continuations).to.deep.equal([{node: 'defco_ack:mux_3', port: 'input2'}])
       /* expect(newGraph.node('defco_ack:mux_3').params.continuations).to.include('defco_ack:ack_11')
       expect(newGraph.node('defco_ack:mux_3').params.continuations).to.include('defco_ack:ack_4')*/
-      expect(newGraph.edges().length).to.equal(graph.edges().length + 3)
+      expect(newGraph.edges().length).to.equal(graph.edges().length + 4)
       expect(newGraph.edge({v: 'defco_ack:mux_0', w: 'defco_ack:mux_3', name: 'defco_ack:mux_0→→defco_ack:mux_3@input2'})).to.be.ok
       expect(newGraph.edge({v: 'defco_ack:mux_0', w: 'defco_ack:mux_3', name: 'defco_ack:mux_0→→defco_ack:mux_3@input2'}).continuation).to.be.true
+    })
+
+    it('creates two continuations on one path for the quicksort example', () => {
+      var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/quicksort.json', 'utf8')))
+      var cnts = api.continuationsForMux(graph, 'quicksort_35:mux_22', {mode: 'only necessary'})
+      // console.log(cnts)
+      expect(cnts.continuations).to.have.length(2)
     })
   })
 })
