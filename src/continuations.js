@@ -17,15 +17,15 @@ function compoundPath (graph, node, port, parent) {
 
 export function muxInPortPathes (graph, mux) {
   // the input ports of a mux are 'control', 'input1' and 'input2'
-  var input1 = walk.walkBack(graph, {node: mux, port: 'input1'}, _.partial(compoundPath, _, _, _, graph.parent(mux)))
-  var input2 = walk.walkBack(graph, {node: mux, port: 'input2'}, _.partial(compoundPath, _, _, _, graph.parent(mux)))
-  var control = walk.walkBack(graph, {node: mux, port: 'input2'}, _.partial(compoundPath, _, _, _, graph.parent(mux)))
+  var input1 = walk.walkBack(graph, {node: mux, port: 'input1'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
+  var input2 = walk.walkBack(graph, {node: mux, port: 'input2'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
+  var control = walk.walkBack(graph, {node: mux, port: 'input2'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
   return {input1, input2, control}
 }
 
 export function firstRecursionOnPath (graph, mux, path) {
   return _.find(path, (n) => {
-    return graph.node(n).recursive
+    return graph.node(n.node).recursive
   })
 }
 
@@ -53,21 +53,21 @@ function recursionContinuations (graph, mux, paths) {
       _.max(paths.control, (c) => path.latestSplit(graph, i2, c)),
       _.max(paths.input1, (i1) => path.latestSplit(graph, i2, i1)))
   })
-  var p1 = _.map(dist1, (d) => paths.input1[d.index].slice(d.value + 1))
-  var p2 = _.map(dist2, (d) => paths.input2[d.index].slice(d.value + 1))
+  var p1 = _.map(dist1, (d) => paths.input1[d.index].slice(-d.max))
+  var p2 = _.map(dist2, (d) => paths.input2[d.index].slice(-d.max))
   var rec1 = _.uniq(_.compact(_.map(p1, (p) => firstRecursionOnPath(graph, mux, p))))
   var rec2 = _.uniq(_.compact(_.map(p2, (p) => firstRecursionOnPath(graph, mux, p))))
   return _.compact(_.flatten([
-    (rec1.length > 0) ? _.map(rec1, (r) => ({node: r, port: 'input1'})) : null,
-    (rec2.length > 0) ? _.map(rec2, (r) => ({node: r, port: 'input2'})) : null
+    (rec1.length > 0) ? _.map(rec1, (r) => ({node: r.node, port: 'input1'})) : null,
+    (rec2.length > 0) ? _.map(rec2, (r) => ({node: r.node, port: 'input2'})) : null
   ]))
 }
 
 function muxStarts (graph, paths, port) {
   return _.compact(
     _.map(paths, (p) => {
-      if (graph.node(p[0]).id === 'logic/mux') {
-        return {node: p[0], port}
+      if (graph.node(p[0].node).id === 'logic/mux') {
+        return {node: p[0].node, port}
       }
     }))
 }
