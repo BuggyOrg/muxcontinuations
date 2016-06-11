@@ -66,7 +66,7 @@ describe('Processing paths to multiplexers inputs', () => {
       expect(grlib.json.write(newGraph)).to.deep.equal(grlib.json.write(graph))
     })
 
-    it('creates two continuation for the factorial example', () => {
+    it.only('creates two continuation for the factorial example', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/factorial.json', 'utf8')))
       var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
       expect(newGraph.node('factorial_10:factorial_3').params.isContinuation).to.be.true
@@ -75,13 +75,11 @@ describe('Processing paths to multiplexers inputs', () => {
       expect(newGraph.edges().length).to.equal(graph.edges().length + 1)
     })
 
-/* future test case for correct continuations
     it('creates one dependent continuation for the successor of the factorial recursion', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/factorial.json', 'utf8')))
       var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
       expect(newGraph.node('factorial_10:multiply_2').params.isContinuation).to.be.true
     })
-*/
 
     it('creates three continuation for the ackermann example', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/ack.json', 'utf8')))

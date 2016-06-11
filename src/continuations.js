@@ -42,6 +42,28 @@ export function maxDistanceForAll (list, fn) {
   })
 }
 
+/** Calculates the nodes with their ports that branch away from the node `to` in the
+ * path array `paths`
+ */
+function branchingPoints (paths, to) {
+  // console.log(paths)
+  var toMap = _.keyBy(to, 'node')
+  console.log(toMap)
+  var branchingPaths = _.reverse(_.reject(paths, (path) => _.find(path, (p) => toMap[p.node])))
+  var recursionPaths = _(paths)
+    .filter((path) => _.find(path, (p) => toMap[p.node]))
+    .map((path) => _.dropWhile(path, (p) => !toMap[p.node]))
+    .tail()
+    .reverse()
+    .value()
+  var branchings = _(branchingPaths)
+    .map((path) => _.map(recursionPaths((rpath) => [path, rpath])))
+    .value()
+  console.log(branchings)
+  console.log(branchingPaths)
+  console.log(recursionPaths)
+}
+
 function recursionContinuations (graph, mux, paths) {
   var dist1 = maxDistanceForAll(paths.input1, (i1) => {
     return Math.max(
@@ -57,6 +79,8 @@ function recursionContinuations (graph, mux, paths) {
   var p2 = _.map(dist2, (d) => paths.input2[d.index].slice(-d.max))
   var rec1 = _.uniq(_.compact(_.map(p1, (p) => firstRecursionOnPath(graph, mux, p))))
   var rec2 = _.uniq(_.compact(_.map(p2, (p) => firstRecursionOnPath(graph, mux, p))))
+  // branchingPoints(p1, rec1)
+  branchingPoints(p2, rec2)
   return _.compact(_.flatten([
     (rec1.length > 0) ? _.map(rec1, (r) => ({node: r.node, port: 'input1'})) : null,
     (rec2.length > 0) ? _.map(rec2, (r) => ({node: r.node, port: 'input2'})) : null
