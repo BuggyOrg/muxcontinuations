@@ -42,26 +42,45 @@ export function maxDistanceForAll (list, fn) {
   })
 }
 
+/** returns the path to the first node in a set of nodes
+ */
+const pathToSetOfNodes = (path, set) => _(path)
+  .dropWhile((p) => !set[p.node])
+  .tail()
+  .reverse()
+  .value()
+
+/** Returns the part of both paths that they have in common
+ * e.g [a, b, c] and [a, b, e] will have [a, b] in common
+ */
+const pathPrefixes = (path1, path2) => _(path1)
+  .zip(path2)
+  .takeWhile(([p1, p2]) => p1 && p2 && p1.node === p2.node)
+  .value()
+
 /** Calculates the nodes with their ports that branch away from the node `to` in the
  * path array `paths`
  */
-function branchingPoints (paths, to) {
-  // console.log(paths)
+function branchingPoints (paths, to, port) {
   var toMap = _.keyBy(to, 'node')
-  console.log(toMap)
-  var branchingPaths = _.reverse(_.reject(paths, (path) => _.find(path, (p) => toMap[p.node])))
+  var branchingPaths = _(paths)
+    .reject((path) => _.find(path, (p) => toMap[p.node]))
+    .map((path) => _.reverse(path))
+    .value()
   var recursionPaths = _(paths)
     .filter((path) => _.find(path, (p) => toMap[p.node]))
-    .map((path) => _.dropWhile(path, (p) => !toMap[p.node]))
-    .tail()
-    .reverse()
+    .map(_.partial(pathToSetOfNodes, _, toMap))
     .value()
   var branchings = _(branchingPaths)
-    .map((path) => _.map(recursionPaths((rpath) => [path, rpath])))
+    .map((path) => _.map(recursionPaths, (rpath) => {
+      var simPath = pathPrefixes(path, rpath)
+      return path[simPath.length]
+    }))
+    .flatten()
+    .uniqBy((b) => b.node + '_P_' + b.port)
+    .map((branch) => ({ node: branch.edge.to, branchPort: branch.edge.inPort, port, type: 'branching' }))
     .value()
-  console.log(branchings)
-  console.log(branchingPaths)
-  console.log(recursionPaths)
+  return branchings
 }
 
 function recursionContinuations (graph, mux, paths) {
@@ -79,11 +98,12 @@ function recursionContinuations (graph, mux, paths) {
   var p2 = _.map(dist2, (d) => paths.input2[d.index].slice(-d.max))
   var rec1 = _.uniq(_.compact(_.map(p1, (p) => firstRecursionOnPath(graph, mux, p))))
   var rec2 = _.uniq(_.compact(_.map(p2, (p) => firstRecursionOnPath(graph, mux, p))))
-  // branchingPoints(p1, rec1)
-  branchingPoints(p2, rec2)
+  var b1 = branchingPoints(p1, rec1, 'input1')
+  var b2 = branchingPoints(p2, rec2, 'input2')
   return _.compact(_.flatten([
-    (rec1.length > 0) ? _.map(rec1, (r) => ({node: r.node, port: 'input1'})) : null,
-    (rec2.length > 0) ? _.map(rec2, (r) => ({node: r.node, port: 'input2'})) : null
+    (rec1.length > 0) ? _.map(rec1, (r) => ({node: r.node, port: 'input1', type: 'recursion'})) : null,
+    (rec2.length > 0) ? _.map(rec2, (r) => ({node: r.node, port: 'input2', type: 'recursion'})) : null,
+    b1, b2
   ]))
 }
 
@@ -107,21 +127,20 @@ export function continuationsForMux (graph, mux, option) {
 export function addContinuations (graph, options = {mode: 'only necessary'}) {
   var muxes = utils.getAll(graph, 'logic/mux')
   var cnts = _.reject(_.map(muxes, _.partial(continuationsForMux, graph, _, options)), (m) => m.continuations.length === 0)
-  var cntNodes = _.map(_.flatten(_.map(cnts, (c) => c.continuations)), 'node')
+  var cntNodes = _.flatten(_.map(cnts, (c) => c.continuations))
   var muxTable = _.keyBy(cnts, 'mux')
-  var recursives = _.flatten(_.map(cntNodes, (n) => (graph.node(n).recursive) ? graph.node(n).recursesTo.branch : []))
-  var cntTable = _.fromPairs(_.map(cntNodes, (c) => [c, true]))
+  var recursives = _.flatten(_.map(cntNodes, (n) => (graph.node(n.node).recursive) ? graph.node(n.node).recursesTo.branch : []))
+  var cntTable = _.fromPairs(_.map(cntNodes, (c) => [c.node, c]))
   var recTable = _.fromPairs(_.map(recursives, (c) => [c, true]))
   var editGraph = utils.edit(graph)
 
   return utils.finalize(_.merge({}, editGraph, {
     nodes: _.map(editGraph.nodes, (n) => {
       var node = n
-      if (_.has(cntTable, n.v)) {
-        node = _.merge({}, node, {value: {params: {isContinuation: cntTable[n.v]}}})
-      }
       if (_.has(recTable, n.v)) {
         node = _.merge({}, node, {value: {params: {isContinuation: recTable[n.v], recursiveRoot: true}}})
+      } else if (_.has(cntTable, n.v)) {
+        node = _.merge({}, node, {value: {params: {isContinuation: cntTable[n.v]}}})
       }
       if (_.has(muxTable, n.v)) {
         node = _.merge({}, node, {value: {params: {continuations: muxTable[n.v].continuations}}})
