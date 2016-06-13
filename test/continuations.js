@@ -73,7 +73,7 @@ describe('Processing paths to multiplexers inputs', () => {
       expect(newGraph.node('factorial_10').params.isContinuation).to.be.true
       expect(newGraph.node('factorial_10:mux_0').params.continuations).to.eql([
         {node: 'factorial_10:factorial_3', port: 'input2', type: 'recursion'},
-        {node: 'factorial_10:multiply_2', port: 'm1', type: 'branching'}
+        {node: 'factorial_10:multiply_2', port: 'input2', branchPorts: ['m1'], type: 'branching'}
       ])
       expect(newGraph.edges().length).to.equal(graph.edges().length + 2)
     })

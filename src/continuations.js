@@ -63,24 +63,32 @@ const pathPrefixes = (path1, path2) => _(path1)
  */
 function branchingPoints (paths, to, port) {
   var toMap = _.keyBy(to, 'node')
+  // the paths that do not go through a continuation node
   var branchingPaths = _(paths)
     .reject((path) => _.find(path, (p) => toMap[p.node]))
     .map((path) => _.reverse(path))
     .value()
-  var recursionPaths = _(paths)
+  // the pathes to the continuations (without the continuation itself)
+  var contPaths = _(paths)
     .filter((path) => _.find(path, (p) => toMap[p.node]))
     .map(_.partial(pathToSetOfNodes, _, toMap))
     .value()
+  // all nodes that branch away from a continuation
   var branchings = _(branchingPaths)
-    .map((path) => _.map(recursionPaths, (rpath) => {
+    .map((path) => _.map(contPaths, (rpath) => {
       var simPath = pathPrefixes(path, rpath)
       return path[simPath.length]
     }))
     .flatten()
     .uniqBy((b) => b.node + '_P_' + b.port)
-    .map((branch) => ({ node: branch.edge.to, branchPort: branch.edge.inPort, port, type: 'branching' }))
+    .map((branch) => ({ node: branch.edge.to, branchPort: branch.edge.inPort }))
     .value()
-  return branchings
+  return _(branchings)
+    .groupBy((b) => b.node)
+    .map((value, key) => {
+      return { node: value[0].node, port, type: 'branching', branchPorts: _.map(value, (v) => v.branchPort) }
+    })
+    .value()
 }
 
 function recursionContinuations (graph, mux, paths) {
