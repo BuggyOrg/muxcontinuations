@@ -4,7 +4,7 @@ import _ from 'lodash'
 
 function compoundPath (graph, node, port, parent) {
   var curNode = graph.node(node)
-  if (node === parent) {
+  if (curNode.recursiveRoot) {
     return [] // found input port of underlying compound node
   } else if (_.includes(_.keys(curNode.inputPorts), port)) {
     return [port]

@@ -1,0 +1,1220 @@
+{
+  "options": {
+    "directed": true,
+    "multigraph": true,
+    "compound": true
+  },
+  "nodes": [
+    {
+      "v": "stdout_8",
+      "value": {
+        "id": "io/stdout",
+        "version": "0.3.0",
+        "inputPorts": {
+          "input": "string"
+        },
+        "outputPorts": {},
+        "settings": {
+          "sideEffects": true,
+          "argumentOrdering": [
+            "input"
+          ]
+        },
+        "atomic": true,
+        "isSink": true,
+        "path": [],
+        "branchPath": "stdout_8",
+        "branch": "stdout_8",
+        "name": "stdout_8",
+        "recursive": false,
+        "typeHint": {}
+      }
+    },
+    {
+      "v": "number_to_string_9",
+      "value": {
+        "id": "translator/number_to_string",
+        "version": "0.2.0",
+        "inputPorts": {
+          "input": "int64"
+        },
+        "outputPorts": {
+          "output": "string"
+        },
+        "atomic": true,
+        "settings": {
+          "argumentOrdering": [
+            "input",
+            "output"
+          ]
+        },
+        "path": [],
+        "branchPath": "number_to_string_9",
+        "branch": "number_to_string_9",
+        "name": "number_to_string_9",
+        "recursive": false,
+        "typeHint": {}
+      }
+    },
+    {
+      "v": "factorial_10",
+      "value": {
+        "id": "factorial",
+        "inputPorts": {
+          "n": "int64"
+        },
+        "outputPorts": {
+          "value": "int64"
+        },
+        "settings": {
+          "argumentOrdering": [
+            "n",
+            "value"
+          ],
+          "genericType": {
+            "n": "int64",
+            "value": "int64"
+          },
+          "isGeneric": true
+        },
+        "implementation": {
+          "nodes": [
+            {
+              "id": "logic/if",
+              "version": "0.2.0",
+              "inputPorts": {
+                "check": "bool",
+                "truePath": "generic",
+                "falsePath": "generic"
+              },
+              "outputPorts": {
+                "value": "generic"
+              },
+              "implementation": {
+                "nodes": [
+                  {
+                    "id": "logic/mux",
+                    "inputPorts": {
+                      "input1": "generic",
+                      "input2": "generic",
+                      "control": "bool"
+                    },
+                    "outputPorts": {
+                      "output": "generic"
+                    },
+                    "atomic": true,
+                    "version": "0.3.0",
+                    "specialForm": true,
+                    "settings": {
+                      "argumentOrdering": [
+                        "input1",
+                        "input2",
+                        "control",
+                        "output"
+                      ]
+                    },
+                    "path": [
+                      {
+                        "meta": "factorial",
+                        "branch": "factorial_10",
+                        "branchPath": "factorial_10"
+                      },
+                      {
+                        "meta": "logic/if",
+                        "branch": "if_0",
+                        "version": "0.2.0",
+                        "branchPath": "factorial_10:if_0"
+                      }
+                    ],
+                    "parent": "factorial_10:if_0",
+                    "branchPath": "factorial_10:if_0:mux_0",
+                    "branch": "mux_0",
+                    "recursive": false
+                  }
+                ],
+                "edges": [
+                  {
+                    "from": "truePath",
+                    "to": "mux_0:input1"
+                  },
+                  {
+                    "from": "falsePath",
+                    "to": "mux_0:input2"
+                  },
+                  {
+                    "from": "check",
+                    "to": "mux_0:control"
+                  },
+                  {
+                    "from": "mux_0:output",
+                    "to": "value"
+                  }
+                ]
+              },
+              "settings": {
+                "argumentOrdering": [
+                  "check",
+                  "truePath",
+                  "falsePath",
+                  "value"
+                ]
+              },
+              "path": [
+                {
+                  "meta": "factorial",
+                  "branch": "factorial_10",
+                  "branchPath": "factorial_10"
+                }
+              ],
+              "parent": "factorial_10",
+              "branchPath": "factorial_10:if_0",
+              "branch": "if_0",
+              "recursive": false
+            },
+            {
+              "id": "math/less",
+              "version": "0.2.1",
+              "inputPorts": {
+                "isLess": "number",
+                "than": "number"
+              },
+              "outputPorts": {
+                "value": "bool"
+              },
+              "atomic": true,
+              "settings": {
+                "argumentOrdering": [
+                  "isLess",
+                  "than",
+                  "value"
+                ]
+              },
+              "path": [
+                {
+                  "meta": "factorial",
+                  "branch": "factorial_10",
+                  "branchPath": "factorial_10"
+                }
+              ],
+              "parent": "factorial_10",
+              "branchPath": "factorial_10:less_1",
+              "branch": "less_1",
+              "recursive": false
+            },
+            {
+              "id": "math/const",
+              "version": "0.3.0",
+              "inputPorts": {},
+              "outputPorts": {
+                "output": "number"
+              },
+              "atomic": true,
+              "settings": {
+                "argumentOrdering": [
+                  "output"
+                ]
+              },
+              "path": [
+                {
+                  "meta": "factorial",
+                  "branch": "factorial_10",
+                  "branchPath": "factorial_10"
+                }
+              ],
+              "params": {
+                "value": 1
+              },
+              "parent": "factorial_10",
+              "branchPath": "factorial_10:const(1)_2",
+              "branch": "const(1)_2",
+              "recursive": false
+            },
+            {
+              "id": "math/const",
+              "version": "0.3.0",
+              "inputPorts": {},
+              "outputPorts": {
+                "output": "number"
+              },
+              "atomic": true,
+              "settings": {
+                "argumentOrdering": [
+                  "output"
+                ]
+              },
+              "path": [
+                {
+                  "meta": "factorial",
+                  "branch": "factorial_10",
+                  "branchPath": "factorial_10"
+                }
+              ],
+              "params": {
+                "value": 1
+              },
+              "parent": "factorial_10",
+              "branchPath": "factorial_10:const(1)_3",
+              "branch": "const(1)_3",
+              "recursive": false
+            },
+            {
+              "id": "math/multiply",
+              "version": "0.3.0",
+              "inputPorts": {
+                "m1": "number",
+                "m2": "number"
+              },
+              "outputPorts": {
+                "product": "number"
+              },
+              "atomic": true,
+              "settings": {
+                "argumentOrdering": [
+                  "m1",
+                  "m2",
+                  "product"
+                ]
+              },
+              "path": [
+                {
+                  "meta": "factorial",
+                  "branch": "factorial_10",
+                  "branchPath": "factorial_10"
+                }
+              ],
+              "parent": "factorial_10",
+              "branchPath": "factorial_10:multiply_4",
+              "branch": "multiply_4",
+              "recursive": false
+            },
+            {
+              "id": "factorial",
+              "inputPorts": {
+                "n": "generic"
+              },
+              "outputPorts": {
+                "value": "generic"
+              },
+              "settings": {
+                "argumentOrdering": [
+                  "n",
+                  "value"
+                ]
+              },
+              "implementation": {
+                "nodes": [
+                  {
+                    "meta": "logic/if",
+                    "name": "if_0"
+                  },
+                  {
+                    "meta": "math/less",
+                    "name": "less_1"
+                  },
+                  {
+                    "meta": "math/const",
+                    "name": "const(1)_2",
+                    "params": {
+                      "value": 1
+                    }
+                  },
+                  {
+                    "meta": "math/const",
+                    "name": "const(1)_3",
+                    "params": {
+                      "value": 1
+                    }
+                  },
+                  {
+                    "meta": "math/multiply",
+                    "name": "multiply_4"
+                  },
+                  {
+                    "meta": "factorial",
+                    "name": "factorial_5"
+                  },
+                  {
+                    "meta": "math/add",
+                    "name": "add_6"
+                  },
+                  {
+                    "meta": "math/const",
+                    "name": "const(-1)_7",
+                    "params": {
+                      "value": -1
+                    }
+                  }
+                ],
+                "edges": [
+                  {
+                    "from": "n",
+                    "to": "less_1:isLess"
+                  },
+                  {
+                    "from": "const(1)_2:output",
+                    "to": "less_1:than"
+                  },
+                  {
+                    "from": "less_1:value",
+                    "to": "if_0:check"
+                  },
+                  {
+                    "from": "const(1)_3:output",
+                    "to": "if_0:truePath"
+                  },
+                  {
+                    "from": "n",
+                    "to": "multiply_4:m1"
+                  },
+                  {
+                    "from": "n",
+                    "to": "add_6:s1"
+                  },
+                  {
+                    "from": "const(-1)_7:output",
+                    "to": "add_6:s2"
+                  },
+                  {
+                    "from": "add_6:sum",
+                    "to": "factorial_5:n"
+                  },
+                  {
+                    "from": "factorial_5:value",
+                    "to": "multiply_4:m2"
+                  },
+                  {
+                    "from": "multiply_4:product",
+                    "to": "if_0:falsePath"
+                  },
+                  {
+                    "from": "if_0:value",
+                    "to": "value"
+                  }
+                ]
+              },
+              "name": "factorial_10",
+              "externalComponent": true,
+              "parent": "factorial_10",
+              "branchPath": "factorial_10:factorial_5",
+              "branch": "factorial_5",
+              "recursesTo": {
+                "meta": "factorial",
+                "branch": "factorial_10",
+                "path": [],
+                "branchPath": "factorial_10"
+              },
+              "recursive": true
+            },
+            {
+              "id": "math/add",
+              "version": "0.3.0",
+              "inputPorts": {
+                "s1": "number",
+                "s2": "number"
+              },
+              "outputPorts": {
+                "sum": "number"
+              },
+              "atomic": true,
+              "settings": {
+                "argumentOrdering": [
+                  "s1",
+                  "s2",
+                  "sum"
+                ]
+              },
+              "path": [
+                {
+                  "meta": "factorial",
+                  "branch": "factorial_10",
+                  "branchPath": "factorial_10"
+                }
+              ],
+              "parent": "factorial_10",
+              "branchPath": "factorial_10:add_6",
+              "branch": "add_6",
+              "recursive": false
+            },
+            {
+              "id": "math/const",
+              "version": "0.3.0",
+              "inputPorts": {},
+              "outputPorts": {
+                "output": "number"
+              },
+              "atomic": true,
+              "settings": {
+                "argumentOrdering": [
+                  "output"
+                ]
+              },
+              "path": [
+                {
+                  "meta": "factorial",
+                  "branch": "factorial_10",
+                  "branchPath": "factorial_10"
+                }
+              ],
+              "params": {
+                "value": -1
+              },
+              "parent": "factorial_10",
+              "branchPath": "factorial_10:const(-1)_7",
+              "branch": "const(-1)_7",
+              "recursive": false
+            }
+          ],
+          "edges": [
+            {
+              "from": "n",
+              "to": "less_1:isLess"
+            },
+            {
+              "from": "const(1)_2:output",
+              "to": "less_1:than"
+            },
+            {
+              "from": "less_1:value",
+              "to": "if_0:check"
+            },
+            {
+              "from": "const(1)_3:output",
+              "to": "if_0:truePath"
+            },
+            {
+              "from": "n",
+              "to": "multiply_4:m1"
+            },
+            {
+              "from": "n",
+              "to": "add_6:s1"
+            },
+            {
+              "from": "const(-1)_7:output",
+              "to": "add_6:s2"
+            },
+            {
+              "from": "add_6:sum",
+              "to": "factorial_5:n"
+            },
+            {
+              "from": "factorial_5:value",
+              "to": "multiply_4:m2"
+            },
+            {
+              "from": "multiply_4:product",
+              "to": "if_0:falsePath"
+            },
+            {
+              "from": "if_0:value",
+              "to": "value"
+            }
+          ]
+        },
+        "name": "factorial_10",
+        "externalComponent": true,
+        "path": [],
+        "branchPath": "factorial_10",
+        "branch": "factorial_10",
+        "recursive": false,
+        "recursiveRoot": true,
+        "typeHint": {}
+      }
+    },
+    {
+      "v": "factorial_10:if_0",
+      "value": {
+        "id": "logic/if",
+        "version": "0.2.0",
+        "inputPorts": {
+          "check": "bool",
+          "truePath": "int64",
+          "falsePath": "int64"
+        },
+        "outputPorts": {
+          "value": "int64"
+        },
+        "implementation": {
+          "nodes": [
+            {
+              "id": "logic/mux",
+              "inputPorts": {
+                "input1": "generic",
+                "input2": "generic",
+                "control": "bool"
+              },
+              "outputPorts": {
+                "output": "generic"
+              },
+              "atomic": true,
+              "version": "0.3.0",
+              "specialForm": true,
+              "settings": {
+                "argumentOrdering": [
+                  "input1",
+                  "input2",
+                  "control",
+                  "output"
+                ]
+              },
+              "path": [
+                {
+                  "meta": "factorial",
+                  "branch": "factorial_10",
+                  "branchPath": "factorial_10"
+                },
+                {
+                  "meta": "logic/if",
+                  "branch": "if_0",
+                  "version": "0.2.0",
+                  "branchPath": "factorial_10:if_0"
+                }
+              ],
+              "parent": "factorial_10:if_0",
+              "branchPath": "factorial_10:if_0:mux_0",
+              "branch": "mux_0",
+              "recursive": false
+            }
+          ],
+          "edges": [
+            {
+              "from": "truePath",
+              "to": "mux_0:input1"
+            },
+            {
+              "from": "falsePath",
+              "to": "mux_0:input2"
+            },
+            {
+              "from": "check",
+              "to": "mux_0:control"
+            },
+            {
+              "from": "mux_0:output",
+              "to": "value"
+            }
+          ]
+        },
+        "settings": {
+          "argumentOrdering": [
+            "check",
+            "truePath",
+            "falsePath",
+            "value"
+          ],
+          "genericType": {
+            "truePath": "int64",
+            "value": "int64",
+            "falsePath": "int64"
+          },
+          "isGeneric": true
+        },
+        "path": [
+          {
+            "meta": "factorial",
+            "branch": "factorial_10",
+            "branchPath": "factorial_10"
+          }
+        ],
+        "parent": "factorial_10",
+        "branchPath": "factorial_10:if_0",
+        "branch": "if_0",
+        "recursive": false,
+        "typeHint": {}
+      },
+      "parent": "factorial_10"
+    },
+    {
+      "v": "factorial_10:if_0:mux_0",
+      "value": {
+        "id": "logic/mux",
+        "inputPorts": {
+          "input1": "int64",
+          "input2": "int64",
+          "control": "bool"
+        },
+        "outputPorts": {
+          "output": "int64"
+        },
+        "atomic": true,
+        "version": "0.3.0",
+        "specialForm": true,
+        "settings": {
+          "argumentOrdering": [
+            "input1",
+            "input2",
+            "control",
+            "output"
+          ],
+          "genericType": "int64",
+          "isGeneric": true
+        },
+        "path": [
+          {
+            "meta": "factorial",
+            "branch": "factorial_10",
+            "branchPath": "factorial_10"
+          },
+          {
+            "meta": "logic/if",
+            "branch": "if_0",
+            "version": "0.2.0",
+            "branchPath": "factorial_10:if_0"
+          }
+        ],
+        "parent": "factorial_10:if_0",
+        "branchPath": "factorial_10:if_0:mux_0",
+        "branch": "mux_0",
+        "recursive": false,
+        "typeHint": {}
+      },
+      "parent": "factorial_10:if_0"
+    },
+    {
+      "v": "factorial_10:less_1",
+      "value": {
+        "id": "math/less",
+        "version": "0.2.1",
+        "inputPorts": {
+          "isLess": "int64",
+          "than": "int64"
+        },
+        "outputPorts": {
+          "value": "bool"
+        },
+        "atomic": true,
+        "settings": {
+          "argumentOrdering": [
+            "isLess",
+            "than",
+            "value"
+          ]
+        },
+        "path": [
+          {
+            "meta": "factorial",
+            "branch": "factorial_10",
+            "branchPath": "factorial_10"
+          }
+        ],
+        "parent": "factorial_10",
+        "branchPath": "factorial_10:less_1",
+        "branch": "less_1",
+        "recursive": false,
+        "typeHint": {}
+      },
+      "parent": "factorial_10"
+    },
+    {
+      "v": "factorial_10:const(1)_2",
+      "value": {
+        "id": "math/const",
+        "version": "0.3.0",
+        "inputPorts": {},
+        "outputPorts": {
+          "output": "int64"
+        },
+        "atomic": true,
+        "settings": {
+          "argumentOrdering": [
+            "output"
+          ]
+        },
+        "path": [
+          {
+            "meta": "factorial",
+            "branch": "factorial_10",
+            "branchPath": "factorial_10"
+          }
+        ],
+        "params": {
+          "value": 1
+        },
+        "parent": "factorial_10",
+        "branchPath": "factorial_10:const(1)_2",
+        "branch": "const(1)_2",
+        "recursive": false,
+        "typeHint": {}
+      },
+      "parent": "factorial_10"
+    },
+    {
+      "v": "factorial_10:const(1)_3",
+      "value": {
+        "id": "math/const",
+        "version": "0.3.0",
+        "inputPorts": {},
+        "outputPorts": {
+          "output": "int64"
+        },
+        "atomic": true,
+        "settings": {
+          "argumentOrdering": [
+            "output"
+          ]
+        },
+        "path": [
+          {
+            "meta": "factorial",
+            "branch": "factorial_10",
+            "branchPath": "factorial_10"
+          }
+        ],
+        "params": {
+          "value": 1
+        },
+        "parent": "factorial_10",
+        "branchPath": "factorial_10:const(1)_3",
+        "branch": "const(1)_3",
+        "recursive": false,
+        "typeHint": {}
+      },
+      "parent": "factorial_10"
+    },
+    {
+      "v": "factorial_10:multiply_4",
+      "value": {
+        "id": "math/multiply",
+        "version": "0.3.0",
+        "inputPorts": {
+          "m1": "int64",
+          "m2": "int64"
+        },
+        "outputPorts": {
+          "product": "int64"
+        },
+        "atomic": true,
+        "settings": {
+          "argumentOrdering": [
+            "m1",
+            "m2",
+            "product"
+          ]
+        },
+        "path": [
+          {
+            "meta": "factorial",
+            "branch": "factorial_10",
+            "branchPath": "factorial_10"
+          }
+        ],
+        "parent": "factorial_10",
+        "branchPath": "factorial_10:multiply_4",
+        "branch": "multiply_4",
+        "recursive": false,
+        "typeHint": {}
+      },
+      "parent": "factorial_10"
+    },
+    {
+      "v": "factorial_10:factorial_5",
+      "value": {
+        "id": "factorial",
+        "inputPorts": {
+          "n": "int64"
+        },
+        "outputPorts": {
+          "value": "int64"
+        },
+        "settings": {
+          "argumentOrdering": [
+            "n",
+            "value"
+          ]
+        },
+        "implementation": {
+          "nodes": [
+            {
+              "meta": "logic/if",
+              "name": "if_0"
+            },
+            {
+              "meta": "math/less",
+              "name": "less_1"
+            },
+            {
+              "meta": "math/const",
+              "name": "const(1)_2",
+              "params": {
+                "value": 1
+              }
+            },
+            {
+              "meta": "math/const",
+              "name": "const(1)_3",
+              "params": {
+                "value": 1
+              }
+            },
+            {
+              "meta": "math/multiply",
+              "name": "multiply_4"
+            },
+            {
+              "meta": "factorial",
+              "name": "factorial_5"
+            },
+            {
+              "meta": "math/add",
+              "name": "add_6"
+            },
+            {
+              "meta": "math/const",
+              "name": "const(-1)_7",
+              "params": {
+                "value": -1
+              }
+            }
+          ],
+          "edges": [
+            {
+              "from": "n",
+              "to": "less_1:isLess"
+            },
+            {
+              "from": "const(1)_2:output",
+              "to": "less_1:than"
+            },
+            {
+              "from": "less_1:value",
+              "to": "if_0:check"
+            },
+            {
+              "from": "const(1)_3:output",
+              "to": "if_0:truePath"
+            },
+            {
+              "from": "n",
+              "to": "multiply_4:m1"
+            },
+            {
+              "from": "n",
+              "to": "add_6:s1"
+            },
+            {
+              "from": "const(-1)_7:output",
+              "to": "add_6:s2"
+            },
+            {
+              "from": "add_6:sum",
+              "to": "factorial_5:n"
+            },
+            {
+              "from": "factorial_5:value",
+              "to": "multiply_4:m2"
+            },
+            {
+              "from": "multiply_4:product",
+              "to": "if_0:falsePath"
+            },
+            {
+              "from": "if_0:value",
+              "to": "value"
+            }
+          ]
+        },
+        "name": "factorial_10",
+        "externalComponent": true,
+        "parent": "factorial_10",
+        "branchPath": "factorial_10:factorial_5",
+        "branch": "factorial_5",
+        "recursesTo": {
+          "meta": "factorial",
+          "branch": "factorial_10",
+          "path": [],
+          "branchPath": "factorial_10"
+        },
+        "recursive": true,
+        "typeHint": {}
+      },
+      "parent": "factorial_10"
+    },
+    {
+      "v": "factorial_10:add_6",
+      "value": {
+        "id": "math/add",
+        "version": "0.3.0",
+        "inputPorts": {
+          "s1": "int64",
+          "s2": "int64"
+        },
+        "outputPorts": {
+          "sum": "int64"
+        },
+        "atomic": true,
+        "settings": {
+          "argumentOrdering": [
+            "s1",
+            "s2",
+            "sum"
+          ]
+        },
+        "path": [
+          {
+            "meta": "factorial",
+            "branch": "factorial_10",
+            "branchPath": "factorial_10"
+          }
+        ],
+        "parent": "factorial_10",
+        "branchPath": "factorial_10:add_6",
+        "branch": "add_6",
+        "recursive": false,
+        "typeHint": {}
+      },
+      "parent": "factorial_10"
+    },
+    {
+      "v": "factorial_10:const(-1)_7",
+      "value": {
+        "id": "math/const",
+        "version": "0.3.0",
+        "inputPorts": {},
+        "outputPorts": {
+          "output": "int64"
+        },
+        "atomic": true,
+        "settings": {
+          "argumentOrdering": [
+            "output"
+          ]
+        },
+        "path": [
+          {
+            "meta": "factorial",
+            "branch": "factorial_10",
+            "branchPath": "factorial_10"
+          }
+        ],
+        "params": {
+          "value": -1
+        },
+        "parent": "factorial_10",
+        "branchPath": "factorial_10:const(-1)_7",
+        "branch": "const(-1)_7",
+        "recursive": false,
+        "typeHint": {}
+      },
+      "parent": "factorial_10"
+    },
+    {
+      "v": "string_to_number_11",
+      "value": {
+        "id": "translator/string_to_number",
+        "version": "0.2.0",
+        "inputPorts": {
+          "input": "string"
+        },
+        "outputPorts": {
+          "output": "int64"
+        },
+        "atomic": true,
+        "settings": {
+          "argumentOrdering": [
+            "input",
+            "output"
+          ]
+        },
+        "path": [],
+        "branchPath": "string_to_number_11",
+        "branch": "string_to_number_11",
+        "name": "string_to_number_11",
+        "recursive": false,
+        "typeHint": {}
+      }
+    },
+    {
+      "v": "stdin_12",
+      "value": {
+        "id": "io/stdin",
+        "version": "0.3.0",
+        "inputPorts": {},
+        "outputPorts": {
+          "output": "string"
+        },
+        "settings": {
+          "sideEffects": true,
+          "argumentOrdering": [
+            "output"
+          ]
+        },
+        "atomic": true,
+        "path": [],
+        "branchPath": "stdin_12",
+        "branch": "stdin_12",
+        "name": "stdin_12",
+        "recursive": false,
+        "typeHint": {}
+      }
+    }
+  ],
+  "edges": [
+    {
+      "v": "stdin_12",
+      "w": "string_to_number_11",
+      "value": {
+        "outPort": "output",
+        "inPort": "input"
+      }
+    },
+    {
+      "v": "string_to_number_11",
+      "w": "factorial_10",
+      "value": {
+        "outPort": "output",
+        "inPort": "n"
+      }
+    },
+    {
+      "v": "factorial_10",
+      "w": "number_to_string_9",
+      "value": {
+        "outPort": "value",
+        "inPort": "input"
+      }
+    },
+    {
+      "v": "number_to_string_9",
+      "w": "stdout_8",
+      "value": {
+        "outPort": "output",
+        "inPort": "input"
+      }
+    },
+    {
+      "v": "factorial_10",
+      "w": "factorial_10:less_1",
+      "name": "factorial_10:n→factorial_10:less_1:isLess",
+      "value": {
+        "outPort": "n",
+        "inPort": "isLess"
+      }
+    },
+    {
+      "v": "factorial_10:const(1)_2",
+      "w": "factorial_10:less_1",
+      "name": "factorial_10:const(1)_2:output→factorial_10:less_1:than",
+      "value": {
+        "outPort": "output",
+        "inPort": "than"
+      }
+    },
+    {
+      "v": "factorial_10:less_1",
+      "w": "factorial_10:if_0",
+      "name": "factorial_10:less_1:value→factorial_10:if_0:check",
+      "value": {
+        "outPort": "value",
+        "inPort": "check"
+      }
+    },
+    {
+      "v": "factorial_10:const(1)_3",
+      "w": "factorial_10:if_0",
+      "name": "factorial_10:const(1)_3:output→factorial_10:if_0:truePath",
+      "value": {
+        "outPort": "output",
+        "inPort": "truePath"
+      }
+    },
+    {
+      "v": "factorial_10",
+      "w": "factorial_10:multiply_4",
+      "name": "factorial_10:n→factorial_10:multiply_4:m1",
+      "value": {
+        "outPort": "n",
+        "inPort": "m1"
+      }
+    },
+    {
+      "v": "factorial_10",
+      "w": "factorial_10:add_6",
+      "name": "factorial_10:n→factorial_10:add_6:s1",
+      "value": {
+        "outPort": "n",
+        "inPort": "s1"
+      }
+    },
+    {
+      "v": "factorial_10:const(-1)_7",
+      "w": "factorial_10:add_6",
+      "name": "factorial_10:const(-1)_7:output→factorial_10:add_6:s2",
+      "value": {
+        "outPort": "output",
+        "inPort": "s2"
+      }
+    },
+    {
+      "v": "factorial_10:add_6",
+      "w": "factorial_10:factorial_5",
+      "name": "factorial_10:add_6:sum→factorial_10:factorial_5:n",
+      "value": {
+        "outPort": "sum",
+        "inPort": "n"
+      }
+    },
+    {
+      "v": "factorial_10:factorial_5",
+      "w": "factorial_10:multiply_4",
+      "name": "factorial_10:factorial_5:value→factorial_10:multiply_4:m2",
+      "value": {
+        "outPort": "value",
+        "inPort": "m2"
+      }
+    },
+    {
+      "v": "factorial_10:multiply_4",
+      "w": "factorial_10:if_0",
+      "name": "factorial_10:multiply_4:product→factorial_10:if_0:falsePath",
+      "value": {
+        "outPort": "product",
+        "inPort": "falsePath"
+      }
+    },
+    {
+      "v": "factorial_10:if_0",
+      "w": "factorial_10",
+      "name": "factorial_10:if_0:value→factorial_10:value",
+      "value": {
+        "outPort": "value",
+        "inPort": "value"
+      }
+    },
+    {
+      "v": "factorial_10:if_0",
+      "w": "factorial_10:if_0:mux_0",
+      "name": "factorial_10:if_0:truePath→factorial_10:if_0:mux_0:input1",
+      "value": {
+        "outPort": "truePath",
+        "inPort": "input1"
+      }
+    },
+    {
+      "v": "factorial_10:if_0",
+      "w": "factorial_10:if_0:mux_0",
+      "name": "factorial_10:if_0:falsePath→factorial_10:if_0:mux_0:input2",
+      "value": {
+        "outPort": "falsePath",
+        "inPort": "input2"
+      }
+    },
+    {
+      "v": "factorial_10:if_0",
+      "w": "factorial_10:if_0:mux_0",
+      "name": "factorial_10:if_0:check→factorial_10:if_0:mux_0:control",
+      "value": {
+        "outPort": "check",
+        "inPort": "control"
+      }
+    },
+    {
+      "v": "factorial_10:if_0:mux_0",
+      "w": "factorial_10:if_0",
+      "name": "factorial_10:if_0:mux_0:output→factorial_10:if_0:value",
+      "value": {
+        "outPort": "output",
+        "inPort": "value"
+      }
+    }
+  ]
+}
