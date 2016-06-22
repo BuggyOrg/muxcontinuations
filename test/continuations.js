@@ -17,9 +17,9 @@ describe('Find first recursion on a path', () => {
     expect(paths.input2).to.have.length(3)
   })
 
-  it('can stops the input path of a mux on another mux', () => {
+  it('stops the input path of a mux on another mux', () => {
     var ack = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/ack.json')))
-    var paths = api.muxInPortPathes(ack, 'defco_ack:mux_0')
+    var paths = api.muxInPortPathes(ack, 'ack_20:mux_0')
     expect(paths).to.be.ok
     expect(paths.input1).to.have.length(2)
     expect(paths.input2).to.have.length(1)
@@ -53,10 +53,10 @@ describe('Processing paths to multiplexers inputs', () => {
 
   it('can finds muxes on mux paths', () => {
     var factorial = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/ack.json')))
-    var cnts = api.continuationsForMux(factorial, 'defco_ack:mux_0', {mode: 'only necessary'})
+    var cnts = api.continuationsForMux(factorial, 'ack_20:mux_0', {mode: 'only necessary'})
     expect(cnts.continuations).to.be.ok
     expect(cnts.continuations).to.have.length(1)
-    expect(cnts.continuations[0]).to.eql({node: 'defco_ack:mux_3', port: 'input2'})
+    expect(cnts.continuations[0]).to.eql({node: 'ack_20:mux_3', port: 'input2'})
   })
 
   describe('Mode: Only necessary', () => {
@@ -78,6 +78,31 @@ describe('Processing paths to multiplexers inputs', () => {
       expect(newGraph.edges().length).to.equal(graph.edges().length + 2)
     })
 
+    it('creates two continuation for the factorial_if example', () => {
+      var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/factorial_if.json', 'utf8')))
+      var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
+      expect(newGraph.node('factorial_10:factorial_5').params.isContinuation).to.be.ok
+      expect(newGraph.node('factorial_10').params.isContinuation).to.be.true
+      expect(newGraph.node('factorial_10:if_0:mux_0').params.continuations).to.eql([
+        {node: 'factorial_10:factorial_5', port: 'input2', type: 'recursion'},
+        {node: 'factorial_10:multiply_4', port: 'input2', branchPorts: ['m1'], type: 'branching'}
+      ])
+      expect(newGraph.edges().length).to.equal(graph.edges().length + 2)
+    })
+
+    it('steps into compounds to look for muxes', () => {
+      var sel = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/selsort.json', 'utf8')))
+      var cnts = api.continuationsForMux(sel, 'selectionsort_37:min_27:if_14:mux_0')
+      expect(cnts.continuations).to.have.length(1)
+      expect(cnts.continuations[0].node).to.equal('selectionsort_37:min_27:if_17:mux_0')
+    })
+
+    it('processes multiple paths correctly', () => {
+      var sel = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/selsort.json', 'utf8')))
+      var cnts = api.continuationsForMux(sel, 'selectionsort_37:min_27:if_17:mux_0')
+      expect(cnts.continuations).to.have.length(1)
+    })
+
     it('creates one dependent continuation for the successor of the factorial recursion', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/factorial.json', 'utf8')))
       var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
@@ -87,22 +112,21 @@ describe('Processing paths to multiplexers inputs', () => {
     it('creates three continuation for the ackermann example', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/ack.json', 'utf8')))
       var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
-      expect(newGraph.node('defco_ack:ack_11').params.isContinuation).to.be.ok
-      expect(newGraph.node('defco_ack:ack_4').params.isContinuation).to.be.ok
-      expect(newGraph.node('defco_ack').params.isContinuation).to.be.true
-      expect(newGraph.node('defco_ack:mux_0').params.continuations).to.deep.equal([{node: 'defco_ack:mux_3', port: 'input2'}])
+      expect(newGraph.node('ack_20:ack_11').params.isContinuation).to.be.ok
+      expect(newGraph.node('ack_20:ack_4').params.isContinuation).to.be.ok
+      expect(newGraph.node('ack_20').params.isContinuation).to.be.true
+      expect(newGraph.node('ack_20:mux_0').params.continuations).to.deep.equal([{node: 'ack_20:mux_3', port: 'input2'}])
       /* expect(newGraph.node('defco_ack:mux_3').params.continuations).to.include('defco_ack:ack_11')
       expect(newGraph.node('defco_ack:mux_3').params.continuations).to.include('defco_ack:ack_4')*/
       expect(newGraph.edges().length).to.equal(graph.edges().length + 4)
-      expect(newGraph.edge({v: 'defco_ack:mux_0', w: 'defco_ack:mux_3', name: 'defco_ack:mux_0→→defco_ack:mux_3@input2'})).to.be.ok
-      expect(newGraph.edge({v: 'defco_ack:mux_0', w: 'defco_ack:mux_3', name: 'defco_ack:mux_0→→defco_ack:mux_3@input2'}).continuation).to.be.true
+      expect(newGraph.edge({v: 'ack_20:mux_0', w: 'ack_20:mux_3', name: 'ack_20:mux_0→→ack_20:mux_3@input2'})).to.be.ok
+      expect(newGraph.edge({v: 'ack_20:mux_0', w: 'ack_20:mux_3', name: 'ack_20:mux_0→→ack_20:mux_3@input2'}).continuation).to.be.true
     })
 
     it('creates two continuations on one path for the quicksort example', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/quicksort.json', 'utf8')))
-      var cnts = api.continuationsForMux(graph, 'quicksort_35:mux_22', {mode: 'only necessary'})
-      // console.log(cnts)
-      expect(cnts.continuations).to.have.length(2)
+      var cnts = api.continuationsForMux(graph, 'quicksort_37:if_22:mux_0', {mode: 'only necessary'})
+      expect(cnts.continuations).to.have.length(3)
     })
   })
 })
