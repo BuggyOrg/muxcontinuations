@@ -78,7 +78,7 @@ describe('Processing paths to multiplexers inputs', () => {
       expect(newGraph.edges().length).to.equal(graph.edges().length + 2)
     })
 
-    it.only('creates two continuation for the factorial_if example', () => {
+    it('creates two continuation for the factorial_if example', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/factorial_if.json', 'utf8')))
       var newGraph = api.addContinuations(graph, {mode: 'only necessary'})
       expect(newGraph.node('factorial_10:factorial_5').params.isContinuation).to.be.ok
@@ -88,6 +88,19 @@ describe('Processing paths to multiplexers inputs', () => {
         {node: 'factorial_10:multiply_4', port: 'input2', branchPorts: ['m1'], type: 'branching'}
       ])
       expect(newGraph.edges().length).to.equal(graph.edges().length + 2)
+    })
+
+    it('steps into compounds to look for muxes', () => {
+      var sel = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/selsort.json', 'utf8')))
+      var cnts = api.continuationsForMux(sel, 'selectionsort_37:min_27:if_14:mux_0')
+      expect(cnts.continuations).to.have.length(1)
+      expect(cnts.continuations[0].node).to.equal('selectionsort_37:min_27:if_17:mux_0')
+    })
+
+    it('processes multiple paths correctly', () => {
+      var sel = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/selsort.json', 'utf8')))
+      var cnts = api.continuationsForMux(sel, 'selectionsort_37:min_27:if_17:mux_0')
+      expect(cnts.continuations).to.have.length(1)
     })
 
     it('creates one dependent continuation for the successor of the factorial recursion', () => {
@@ -112,9 +125,8 @@ describe('Processing paths to multiplexers inputs', () => {
 
     it('creates two continuations on one path for the quicksort example', () => {
       var graph = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/quicksort.json', 'utf8')))
-      var cnts = api.continuationsForMux(graph, 'quicksort_35:mux_22', {mode: 'only necessary'})
-      // console.log(cnts)
-      expect(cnts.continuations).to.have.length(2)
+      var cnts = api.continuationsForMux(graph, 'quicksort_37:if_22:mux_0', {mode: 'only necessary'})
+      expect(cnts.continuations).to.have.length(3)
     })
   })
 })

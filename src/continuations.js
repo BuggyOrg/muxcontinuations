@@ -4,12 +4,14 @@ import _ from 'lodash'
 
 function compoundPath (graph, node, port, parent) {
   var curNode = graph.node(node)
-  if (curNode.recursiveRoot) {
+  if (curNode.recursiveRoot && utils.portDirectionType(graph, node, port) === 'inputPorts') {
     return [] // found input port of underlying compound node
   } else if (_.includes(_.keys(curNode.inputPorts), port)) {
     return [port]
   } else if (curNode.id === 'logic/mux') {
     return [] // if it is not the mux we started at, stop here!
+  } else if (!curNode.atomic && utils.portDirectionType(graph, node, port) === 'outputPorts' && !(curNode.recursive || curNode.recursiveRoot)) {
+    return _.keys(curNode.outputPorts)
   } else {
     return _.keys(curNode.inputPorts)
   }
@@ -19,8 +21,8 @@ export function muxInPortPathes (graph, mux) {
   // the input ports of a mux are 'control', 'input1' and 'input2'
   var input1 = walk.walkBack(graph, {node: mux, port: 'input1'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
   var input2 = walk.walkBack(graph, {node: mux, port: 'input2'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
-  var control = walk.walkBack(graph, {node: mux, port: 'input2'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
-  return {input1, input2, control}
+  // var control = walk.walkBack(graph, {node: mux, port: 'control'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
+  return { input1, input2 } // {input1, input2, control}
 }
 
 export function firstRecursionOnPath (graph, mux, path) {
@@ -75,11 +77,13 @@ function branchingPoints (paths, to, port) {
     .value()
   // all nodes that branch away from a continuation
   var branchings = _(branchingPaths)
-    .map((path) => _.map(contPaths, (rpath) => {
+    // every branching path can have only ONE branching node (and it is always the farthest)
+    .map((path) => _.maxBy(_.map(contPaths, (rpath) => {
       var simPath = pathPrefixes(path, rpath)
-      return path[simPath.length]
-    }))
-    .flatten()
+      return { path: path[simPath.length], length: simPath.length }
+    }), (p) => p.length))
+    .compact()
+    .map((p) => p.path)
     .uniqBy((b) => b.node + '_P_' + b.port)
     .map((branch) => ({ node: branch.edge.to, branchPort: branch.edge.inPort }))
     .value()
