@@ -21,8 +21,8 @@ export function muxInPortPathes (graph, mux) {
   // the input ports of a mux are 'control', 'input1' and 'input2'
   var input1 = walk.walkBack(graph, {node: mux, port: 'input1'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
   var input2 = walk.walkBack(graph, {node: mux, port: 'input2'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
-  // var control = walk.walkBack(graph, {node: mux, port: 'control'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
-  return { input1, input2 } // {input1, input2, control}
+  var control = walk.walkBack(graph, {node: mux, port: 'control'}, _.partial(compoundPath, _, _, _, graph.parent(mux)), {keepPorts: true})
+  return {input1, input2, control}
 }
 
 export function firstRecursionOnPath (graph, mux, path) {
@@ -95,7 +95,7 @@ function branchingPoints (paths, to, port) {
     .value()
 }
 
-function recursionContinuations (graph, mux, paths) {
+function recursionContinuations (graph, mux, paths, option) {
   var dist1 = maxDistanceForAll(paths.input1, (i1) => {
     return Math.max(
       _.max(paths.control, (c) => path.latestSplit(graph, i1, c)),
@@ -106,16 +106,25 @@ function recursionContinuations (graph, mux, paths) {
       _.max(paths.control, (c) => path.latestSplit(graph, i2, c)),
       _.max(paths.input1, (i1) => path.latestSplit(graph, i2, i1)))
   })
+  var dist3 = maxDistanceForAll(paths.control, (c) => {
+    return Math.max(
+      _.max(paths.input1, (i1) => path.latestSplit(graph, c, i1)),
+      _.max(paths.input2, (i2) => path.latestSplit(graph, c, i2)))
+  })
   var p1 = _.map(dist1, (d) => paths.input1[d.index].slice(-d.max))
   var p2 = _.map(dist2, (d) => paths.input2[d.index].slice(-d.max))
+  var p3 = _.map(dist3, (d) => paths.control[d.index].slice(-d.max))
   var rec1 = _.uniq(_.compact(_.map(p1, (p) => firstRecursionOnPath(graph, mux, p))))
   var rec2 = _.uniq(_.compact(_.map(p2, (p) => firstRecursionOnPath(graph, mux, p))))
+  var rec3 = (option.includeControl) ? _.uniq(_.compact(_.map(p3, (p) => firstRecursionOnPath(graph, mux, p)))) : []
   var b1 = branchingPoints(p1, rec1, 'input1')
   var b2 = branchingPoints(p2, rec2, 'input2')
+  var b3 = (option.includeControl) ? branchingPoints(p3, rec3, 'control') : []
   return _.compact(_.flatten([
     (rec1.length > 0) ? _.map(rec1, (r) => ({node: r.node, port: 'input1', type: 'recursion'})) : null,
     (rec2.length > 0) ? _.map(rec2, (r) => ({node: r.node, port: 'input2', type: 'recursion'})) : null,
-    b1, b2
+    (rec3.length > 0) ? _.map(rec3, (r) => ({node: r.node, port: 'control', type: 'recursion'})) : null,
+    b1, b2, b3
   ]))
 }
 
@@ -130,13 +139,19 @@ function muxStarts (graph, paths, port) {
 
 export function continuationsForMux (graph, mux, option) {
   var paths = muxInPortPathes(graph, mux)
+  var controlMuxes = (option.includeControl) ? muxStarts(graph, paths.control, 'control') : []
   return {
     mux,
-    continuations: _.concat(recursionContinuations(graph, mux, paths), muxStarts(graph, paths.input1, 'input1'), muxStarts(graph, paths.input2, 'input2'))
+    continuations: _.concat(
+      recursionContinuations(graph, mux, paths, option),
+      muxStarts(graph, paths.input1, 'input1'),
+      muxStarts(graph, paths.input2, 'input2'),
+      controlMuxes
+    )
   }
 }
 
-export function addContinuations (graph, options = {mode: 'only necessary'}) {
+export function addContinuations (graph, options = {mode: 'only necessary', includeControl: false}) {
   var muxes = utils.getAll(graph, 'logic/mux')
   var cnts = _.reject(_.map(muxes, _.partial(continuationsForMux, graph, _, options)), (m) => m.continuations.length === 0)
   var cntNodes = _.flatten(_.map(cnts, (c) => c.continuations))
@@ -160,14 +175,17 @@ export function addContinuations (graph, options = {mode: 'only necessary'}) {
       return node
     }),
     edges: _.concat(editGraph.edges, _.flatten(_.map(cnts, (c) =>
-      _.map(c.continuations, (n) => ({
-        v: c.mux,
-        w: n.node,
-        name: c.mux + '→→' + n.node + '@' + n.port,
-        value: {
-          continuation: true
+      _.map(c.continuations, (n) => {
+        return {
+          v: c.mux,
+          w: n.node,
+          name: c.mux + '→→' + n.node + '@' + n.port,
+          value: {
+            continuation: true,
+            control: n.port === 'control'
+          }
         }
-      })))
+      }))
     ))
   }))
 }

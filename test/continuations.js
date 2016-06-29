@@ -97,10 +97,11 @@ describe('Processing paths to multiplexers inputs', () => {
       expect(cnts.continuations[0].node).to.equal('selectionsort_37:min_27:if_17:mux_0')
     })
 
-    it('processes multiple paths correctly', () => {
+    it.only('processes multiple paths correctly', () => {
       var sel = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/selsort.json', 'utf8')))
       var cnts = api.continuationsForMux(sel, 'selectionsort_37:min_27:if_17:mux_0')
-      expect(cnts.continuations).to.have.length(1)
+      console.log(cnts)
+      expect(cnts.continuations).to.have.length(3)
     })
 
     it('creates one dependent continuation for the successor of the factorial recursion', () => {
