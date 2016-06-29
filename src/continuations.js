@@ -137,7 +137,7 @@ function muxStarts (graph, paths, port) {
     }))
 }
 
-export function continuationsForMux (graph, mux, option) {
+export function continuationsForMux (graph, mux, option = {mode: 'only necessary', includeControl: false}) {
   var paths = muxInPortPathes(graph, mux)
   var controlMuxes = (option.includeControl) ? muxStarts(graph, paths.control, 'control') : []
   return {

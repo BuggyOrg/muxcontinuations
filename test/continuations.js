@@ -97,10 +97,15 @@ describe('Processing paths to multiplexers inputs', () => {
       expect(cnts.continuations[0].node).to.equal('selectionsort_37:min_27:if_17:mux_0')
     })
 
-    it.only('processes multiple paths correctly', () => {
+    it('processes multiple paths correctly', () => {
       var sel = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/selsort.json', 'utf8')))
       var cnts = api.continuationsForMux(sel, 'selectionsort_37:min_27:if_17:mux_0')
-      console.log(cnts)
+      expect(cnts.continuations).to.have.length(1)
+    })
+
+    it('processes multiple paths correctly', () => {
+      var sel = grlib.json.read(JSON.parse(fs.readFileSync('test/fixtures/selsort.json', 'utf8')))
+      var cnts = api.continuationsForMux(sel, 'selectionsort_37:min_27:if_17:mux_0', {includeControl: true})
       expect(cnts.continuations).to.have.length(3)
     })
 
