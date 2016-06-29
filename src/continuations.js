@@ -1,5 +1,5 @@
 
-import {utils, walk, path} from '@buggyorg/graphtools'
+import {utils, walk, path, graph as graphAPI} from '@buggyorg/graphtools'
 import _ from 'lodash'
 
 function compoundPath (graph, node, port, parent) {
@@ -144,9 +144,9 @@ export function addContinuations (graph, options = {mode: 'only necessary'}) {
   var recursives = _.flatten(_.map(cntNodes, (n) => (graph.node(n.node).recursive) ? graph.node(n.node).recursesTo.branch : []))
   var cntTable = _.fromPairs(_.map(cntNodes, (c) => [c.node, c]))
   var recTable = _.fromPairs(_.map(recursives, (c) => [c, true]))
-  var editGraph = utils.edit(graph)
+  var editGraph = graphAPI.toJSON(graph)
 
-  return utils.finalize(_.merge({}, editGraph, {
+  return graphAPI.importJSON(_.merge({}, editGraph, {
     nodes: _.map(editGraph.nodes, (n) => {
       var node = n
       if (_.has(recTable, n.v)) {
